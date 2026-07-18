@@ -9,7 +9,6 @@ export default function Navbar() {
           Pokemon
         </NavLink>
         <NavLink to="/favorites">Favorites</NavLink>
-        <NavLink to="/teams">Teams</NavLink>
       </nav>
     </header>
   )

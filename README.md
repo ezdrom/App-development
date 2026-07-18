@@ -2,12 +2,14 @@
 
 React (Vite) + Node/Express + MongoDB app built against [PokeAPI](https://pokeapi.co/). All PokeAPI calls happen server-side; the React client only talks to this app's own `/api/*` backend.
 
+This boilerplate is deliberately scoped to just the first two assessment requirements — **List of Pokemon with images** and **List of favorite Pokemon** — so there's minimal surface area to read before you start coding. Search, sort, grid/list view, Pokemon detail, and teams were stripped out; see "Growing this later" below for how to add them back.
+
 ## Project structure
 
 ```
 pokemon-app/
   client/   React app (Vite, functional components + hooks)
-  server/   Express API (proxies PokeAPI, owns Favorites & Teams in MongoDB)
+  server/   Express API (proxies PokeAPI, owns Favorites in MongoDB)
 ```
 
 ## Prerequisites
@@ -25,15 +27,6 @@ npm install
 cp .env.example .env   # then edit MONGODB_URI if not using local default
 npm run dev             # starts on http://localhost:5000
 ```
-
-`.env` values:
-
-| Var | Default | Notes |
-|---|---|---|
-| `PORT` | `5000` | API port |
-| `MONGODB_URI` | `mongodb://127.0.0.1:27017/pokemon-app` | point at Atlas if not running Mongo locally |
-| `POKEAPI_BASE_URL` | `https://pokeapi.co/api/v2` | |
-| `CLIENT_ORIGIN` | `http://localhost:5173` | for CORS |
 
 ### 2. Frontend
 
@@ -53,38 +46,25 @@ Open two terminals — one running `server` (`npm run dev`), one running `client
 
 | Method | Route | Purpose |
 |---|---|---|
-| GET | `/api/pokemon?limit=20&offset=0&search=&sort=asc\|desc` | Paginated Pokemon list (name + image), proxied from PokeAPI |
-| GET | `/api/pokemon/:name` | Pokemon detail: image, types, abilities, stats |
+| GET | `/api/pokemon?limit=20&offset=0` | Paginated Pokemon list (name + image), proxied from PokeAPI |
 | GET | `/api/favorites` | List favorited Pokemon |
 | POST | `/api/favorites` | Add a favorite — body `{ name, image }` |
 | DELETE | `/api/favorites/:name` | Remove a favorite |
-| GET | `/api/teams` | List teams |
-| POST | `/api/teams` | Create a team — body `{ name, pokemons: [] }` |
-| PUT | `/api/teams/:id` | Update a team |
-| DELETE | `/api/teams/:id` | Delete a team |
 
-## Requirements checklist
+## What to build
 
-Wired up (context, API service, routing, DB, reusable UI atoms) but **not yet implemented** — each page has a `TODO` comment marking exactly what to fill in:
+Two files have `TODO` comments marking exactly what's left:
 
-- [ ] List of Pokemon with images — [`PokemonListPage.jsx`](client/src/pages/PokemonListPage.jsx)
-- [ ] List of favorite Pokemon — [`FavoritesPage.jsx`](client/src/pages/FavoritesPage.jsx)
-- [ ] Searchable Pokemon — `SearchBar` is wired into `PokemonListPage`, backend already supports `?search=`
-- [ ] Viewable Pokemon details & ability — [`PokemonDetailPage.jsx`](client/src/pages/PokemonDetailPage.jsx)
-- [ ] Sortable ascending/descending — `SortControl` is wired into `PokemonListPage`, backend already supports `?sort=`
-- [ ] Grid & list view — `ViewToggle` is wired into `PokemonListPage`
-- [x] Default page size of 20 — `PAGE_SIZE` constant in `PokemonListPage.jsx`
-- [ ] Add Pokemon as favorite — `FavoriteButton` component is fully wired (context + backend), drop it into `PokemonCard`
-- [ ] Multiple Pokemon teams — [`TeamsPage.jsx`](client/src/pages/TeamsPage.jsx)
+- [ ] List of Pokemon with images — [`client/src/pages/PokemonListPage.jsx`](client/src/pages/PokemonListPage.jsx). Call `fetchPokemonList({ limit: 20, offset: 0 })` from `services/api.js` and render the results with `<PokemonCard>` in a `.pokemon-grid`.
+- [ ] List of favorite Pokemon — [`client/src/pages/FavoritesPage.jsx`](client/src/pages/FavoritesPage.jsx). `useFavorites()` already gives you the loaded array; render it the same way.
+
+Already fully working, no need to touch: `FavoriteButton`, `PokemonCard`, `FavoritesContext`, and the whole backend (Pokemon proxy + Favorites CRUD in MongoDB).
 
 ## Git flow
 
-This repo follows git flow:
-
 - `main` — always deployable
 - `develop` — integration branch, start here
-- `feature/<name>` — branch off `develop` for each requirement (e.g. `feature/pokemon-list`, `feature/favorites`), PR back into `develop`
-- `release/<version>` / `hotfix/<name>` — as needed
+- `feature/<name>` — branch off `develop` per requirement (e.g. `feature/pokemon-list`, `feature/favorites`), PR back into `develop`
 
 ```bash
 git checkout develop
@@ -94,9 +74,17 @@ git checkout develop
 git merge --no-ff feature/pokemon-list
 ```
 
+## Growing this later
+
+The rest of the assessment (searchable, sortable, grid/list view, Pokemon detail & abilities, multiple teams) was removed to keep this boilerplate minimal. When you're ready to add them back:
+
+- **Search/sort**: add query params to `GET /api/pokemon` and filter/sort server-side (PokeAPI itself doesn't support either, so you'll want to cache its full name list in-memory — same idea as `getAllPokemonNames` if you want to look at how a previous pass did it).
+- **Grid/list view**: a simple client-side toggle + CSS class swap, no backend change needed.
+- **Pokemon detail & abilities**: add `GET /api/pokemon/:name` proxying `pokeapi.co/api/v2/pokemon/:name`, plus a detail route/page in the client.
+- **Teams**: add a `Team` Mongoose model (`{ name, pokemons: [] }`) and CRUD routes/controller under `/api/teams`, mirroring the `Favorite` model/routes already in place.
+
 ## Notable design choices
 
 - **Backend proxies PokeAPI**: the client never calls `pokeapi.co` directly, per the assessment's "APIs integrated from the Node backend" requirement.
-- **Search/sort** on `/api/pokemon` operate over PokeAPI's full name list (cached in-memory for an hour) since PokeAPI itself doesn't support search or alphabetical sort — see `server/src/utils/pokeApiClient.js`.
 - **Sprites** are built directly from the Pokemon's numeric ID (`https://raw.githubusercontent.com/PokeAPI/sprites/...`) to avoid an extra detail request per list item.
-- **Favorites & teams** are persisted in MongoDB via Mongoose, fully CRUD'd already — the frontend only needs to render/call them (see `FavoritesContext` / `TeamsContext`).
+- **Favorites** are persisted in MongoDB via Mongoose, fully CRUD'd already — the frontend only needs to render/call them (see `FavoritesContext`).

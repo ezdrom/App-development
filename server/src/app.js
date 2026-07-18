@@ -2,7 +2,6 @@ import express from 'express'
 import cors from 'cors'
 import pokemonRoutes from './routes/pokemonRoutes.js'
 import favoritesRoutes from './routes/favoritesRoutes.js'
-import teamsRoutes from './routes/teamsRoutes.js'
 
 const app = express()
 
@@ -12,7 +11,6 @@ app.use(express.json())
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }))
 app.use('/api/pokemon', pokemonRoutes)
 app.use('/api/favorites', favoritesRoutes)
-app.use('/api/teams', teamsRoutes)
 
 app.use((req, res) => res.status(404).json({ message: 'Not found' }))
 

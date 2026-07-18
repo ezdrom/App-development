@@ -46,33 +46,10 @@ body {
   padding: 24px;
 }
 
-.toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.toolbar input,
-.toolbar select,
-.toolbar button {
-  padding: 8px 12px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 0.9rem;
-}
-
 .pokemon-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 16px;
-}
-
-.pokemon-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
 .pokemon-card {
