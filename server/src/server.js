@@ -7,11 +7,13 @@ const PORT = process.env.PORT || 5000
 async function start() {
   try {
     await connectDB()
-    app.listen(PORT, () => console.log(`Server listening on http://localhost:${PORT}`))
   } catch (err) {
-    console.error('Failed to start server:', err.message)
-    process.exit(1)
+    // Don't block boot on Mongo: the Pokemon list endpoint doesn't need a
+    // database, only /api/favorites does. Fix MONGODB_URI in .env once you
+    // need favorites to work.
+    console.error('MongoDB connection failed, starting without it:', err.message)
   }
+  app.listen(PORT, () => console.log(`Server listening on http://localhost:${PORT}`))
 }
 
 start()
